@@ -1,8 +1,10 @@
-import load_data
+import db
 import matplotlib
 matplotlib.use("Agg")  # non-interactive backend for Streamlit
 import matplotlib.pyplot as plt
 from scipy import stats
+import json
+import os
 
 CELL_POPULATIONS = ["b_cell", "cd8_t_cell", "cd4_t_cell", "nk_cell", "monocyte"]
 POPULATION_LABELS = {
@@ -22,7 +24,7 @@ def createFrequencyTable():
     """
     rows = []
 
-    for row in load_data.getAllSampleRows():
+    for row in db.getAllSampleRows():
         (
             sample,
             _sample_type,
@@ -72,7 +74,7 @@ def statisticalAnalysis():
     frequency_table = createFrequencyTable()
 
     # Get sample IDs for each response group
-    yes_samples, no_samples = load_data.getTargetSamples()
+    yes_samples, no_samples = db.getTargetSamples()
     # TODO: maybe get getTargetSamples() to return a normal list instead of a list of tuples of single elements
     yes_samples = {row[0] for row in yes_samples}
     no_samples = {row[0] for row in no_samples}
@@ -188,10 +190,46 @@ def buildBoxplotFigure(plot_data, p_values):
     return fig
 
 
-if __name__ == "__main__":
+
+OUTPUT_DIR = "output"
+
+
+def write_json(filename, data):
+    """Write a dict/list to a JSON file inside OUTPUT_DIR."""
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    path = os.path.join(OUTPUT_DIR, filename)
+    with open(path, "w") as f:
+        json.dump(data, f, indent=2)
+
+
+def save_all_results():
+    """Run the full analysis and persist every output to disk."""
+    # Frequency table
+    freq = createFrequencyTable()
+    write_json("frequency_table.json", freq)
+
+    # Statistical analysis
     plot_data, p_values, summary = statisticalAnalysis()
-    for row in summary:
-        print(row)
+    write_json("responder_summary.json", summary)
+
+    # Boxplot data (percentages per population per response group)
+    write_json("boxplot_data.json", plot_data)
+
+    # Boxplot figure as PNG
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    fig = buildBoxplotFigure(plot_data, p_values)
+    fig.savefig(
+        os.path.join(OUTPUT_DIR, "boxplot.png"),
+        dpi=150,
+        bbox_inches="tight",
+    )
+    plt.close(fig)
+
+    print(f"All results saved to ./{OUTPUT_DIR}/")
+
+
+if __name__ == "__main__":
+    save_all_results()
 
             
 
