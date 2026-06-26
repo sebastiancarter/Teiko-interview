@@ -96,7 +96,7 @@ def addItemToSamples(sample,
 def getAllSampleRows():
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM samples")
-    return cursor.fetchall()
+    return list(cursor.fetchall())
 
 
 
@@ -128,6 +128,6 @@ if __name__ == "__main__":
                              row["subject"],
                              row["project"])
 
-    print(getBcellColumn("b_cell", "samples"))
-
+    print("done loading data")
+    
 
