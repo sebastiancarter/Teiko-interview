@@ -23,7 +23,7 @@ def relativeFrequencyTablePage():
     for row in rows:
         all_populations.add(row["Population"])
 
-    # --- Sidebar filters ---
+    # Sidebar filters
     st.sidebar.header("Filters")
     selected_populations = st.sidebar.multiselect(
         "Populations", options=all_populations, default=all_populations
@@ -52,6 +52,8 @@ def relativeFrequencyTablePage():
     col2.metric("Total Populations", len(unique_pops))
     col3.metric("Total Cells", f"{total_cells:,}")
 
+
+    
     st.subheader("Frequency Table")
     st.dataframe(
         filteredRows,
@@ -64,6 +66,38 @@ def relativeFrequencyTablePage():
         },
     )
 
+def advancedAnalysisPage():
+    st.title("Advanced Analysis")
+    st.markdown(
+        "Comparing relative frequencies of immune cell populations between "
+        "**responders** (response = yes) and **non‑responders** (response = no) — "
+        "PBMC samples only, melanoma patients on miraclib."
+    )
+
+    plot_data, p_values, summary_rows = analysis.statisticalAnalysis()
+
+    # summary tavle which shows the mean relative frequencies and p-values for each cell population
+    st.subheader("Mean relative frequencies & p‑values")
+    st.dataframe(
+        summary_rows,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "p-value": st.column_config.NumberColumn(format="%.4f"),
+            "Responder mean %": st.column_config.NumberColumn(format="%.2f %%"),
+            "Non-responder mean %": st.column_config.NumberColumn(format="%.2f %%"),
+            "Difference in means": st.column_config.NumberColumn(format="%.2f %%"), 
+        },
+    )
+
+    # significance caption
+    st.caption("\* p < 0.05 \*\* p < 0.01 \*\*\* p < 0.001  —  Mann–Whitney U test")
+    st.write("So we can see from our mann-whitney U test that there are significant differences between the CD4 T cell counts of responders and non-responders, with a p-value of 0.0134. " \
+             "\nThis suggests that the CD4 T cell counts could be a useful marker for predicting response to miraclib treatment in melanoma patients.")
+    # boxplots
+    st.subheader("Boxplots")
+    fig = analysis.buildBoxplotFigure(plot_data, p_values)
+    st.pyplot(fig)
 
 def main():
     page = navBar()
@@ -71,7 +105,6 @@ def main():
     if page == "Relative Frequency Table":
         relativeFrequencyTablePage()
     elif page == "Advanced Analysis":
-        st.title("Advanced Analysis")
-        st.write("This is the advanced analysis page.")
+        advancedAnalysisPage()
 
 main()
