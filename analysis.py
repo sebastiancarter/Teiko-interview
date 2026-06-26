@@ -1,58 +1,63 @@
 import load_data
 
+CELL_POPULATIONS = ["b_cell", "cd8_t_cell", "cd4_t_cell", "nk_cell", "monocyte"]
+POPULATION_LABELS = {
+    "b_cell": "B cell",
+    "cd8_t_cell": "CD8+ T cell",
+    "cd4_t_cell": "CD4+ T cell",
+    "nk_cell": "NK cell",
+    "monocyte": "Monocyte",
+}
 
 
-
-# Create a frequency table for each sample, with the total count of cells and the percentage of each cell type.
 def createFrequencyTable():
-    allRows = load_data.getAllSampleRows()
+    """Builds a frequency table of cell populations per sample.
 
-    # Create a dictionary to hold the frequency table data 
-    tableDict = {"sample": list(), "total_count": list(), "population": list(), "count": list(), "percentage": list()}
-    cellList = ["b_cell", "cd8_t_cell", "cd4_t_cell", "nk_cell", "monocyte"]
-    for row in allRows:
+    Returns a list of dicts, one per cell-population/sample combination,
+    with keys: Sample, Population, Count, Total Count, Percentage.
+    """
+    rows = []
 
-        totalCount = 0
-        # Unpack the row into variables
-        (sample, 
-        sample_type, 
-        time_from_treatment_start, 
-        b_cell, 
-        cd8_t_cell, 
-        cd4_t_cell, 
-        nk_cell, 
-        monocyte,
-        project,
-        subject) = row 
+    for row in load_data.getAllSampleRows():
+        (
+            sample,
+            _sample_type,
+            _time_from_treatment_start,
+            b_cell,
+            cd8_t_cell,
+            cd4_t_cell,
+            nk_cell,
+            monocyte,
+            _project,
+            _subject,
+        ) = row
 
-        # Create a dictionary for the current row, 
-        # this will make it easier to access the cell counts by name
-        # but its mostly because my initial approach used a dictionary, might rewrite this later
-        rowDict =  {"sample": sample, 
-                    "b_cell": b_cell, 
-                    "cd8_t_cell": cd8_t_cell, 
-                    "cd4_t_cell": cd4_t_cell, 
-                    "nk_cell": nk_cell, 
-                    "monocyte": monocyte}
-         
-        # looping through to get the counts
-        for cell in cellList:
-            tableDict["sample"].append(rowDict["sample"])
-            count = rowDict[cell]
-            tableDict["count"].append(count)
-            totalCount+= count
+        counts = {
+            "b_cell": b_cell,
+            "cd8_t_cell": cd8_t_cell,
+            "cd4_t_cell": cd4_t_cell,
+            "nk_cell": nk_cell,
+            "monocyte": monocyte,
+        }
 
-        # looping through again to get the percentages
-        for cell in cellList:
-            tableDict["total_count"].append(totalCount)
-            count = rowDict[cell]
-            if totalCount != 0:
-                percentage = count/totalCount * 100
-                tableDict["percentage"].append(percentage) 
+        total = sum(counts.values())
+
+        for cell_population in CELL_POPULATIONS:
+            count = counts[cell_population]
+            if total != 0:
+                percentage = count / total * 100
             else:
-                tableDict["percentage"].append(None)
+                percentage = None
+            
+            rows.append({
+                "Sample": sample,
+                "Total Count": total,
+                "Population": POPULATION_LABELS[cell_population],
+                "Count": count,
+                "Percentage": percentage,
+            })
 
-    return tableDict
+    return rows
 
 
 
