@@ -101,12 +101,10 @@ def getAllSampleRows():
         return list(cursor.fetchall())
 
 
-
-def getAllSubjectsWithPBMC():
+# TODO: rename this function to something better
+def getTargetSamples():
     with sqlite3.connect("cell-count.db") as conn:
         cursor = conn.cursor()
-        # currently using prj1 and 3 to get the subjects with PBMC samples, because these two are the only
-        # projcts that have them. This is just a temp solution, but is currently the easiest way to make it work.
         cursor.execute("""
                     SELECT s.sample
                     FROM samples s
