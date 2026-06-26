@@ -93,6 +93,13 @@ def addItemToSamples(sample,
         print("a duplicate entry was added")
 
 
+def getAllSampleRows():
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM samples")
+    return cursor.fetchall()
+
+
+
 if __name__ == "__main__":
     initializeTables()
 
