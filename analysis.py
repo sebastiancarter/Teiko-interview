@@ -67,7 +67,6 @@ def createFrequencyTable():
 
 
 
-# TODO: rename this function to something better
 def statisticalAnalysis():
     """Compare relative frequencies: responders vs non-responders (PBMC only).
     """
@@ -139,7 +138,6 @@ def statisticalAnalysis():
 
     return plot_data, p_values, summary_rows
 
-#TODO: rename this function to something better
 def buildBoxplotFigure(plot_data, p_values):
     """Create a matplotlib Figure with side‑by‑side boxplots."""
     populations = list(plot_data.keys())
@@ -190,6 +188,59 @@ def buildBoxplotFigure(plot_data, p_values):
     return fig
 
 
+def dataSubsetSummary():
+    """Summarise the baseline (time=0) melanoma / PBMC / miraclib subset.
+    """
+    rows = db.getTargetSamplesAtBaseline()
+    # rows: [(sample, project, subject, response, sex), ...]
+
+    # Count by project
+    project_counts = {}
+    for sample, project, subject, response, sex in rows:
+        project_counts[project] = project_counts.get(project, 0) + 1
+
+    # Count unique subjects by response
+    response_subjects = {}
+    for sample, project, subject, response, sex in rows:
+        response_subjects.setdefault(response, set()).add(subject)
+    response_counts = {k: len(v) for k, v in response_subjects.items()}
+
+    # Count unique subjects by sex
+    sex_subjects = {}
+    for sample, project, subject, response, sex in rows:
+        sex_subjects.setdefault(sex, set()).add(subject)
+    sex_counts = {k: len(v) for k, v in sex_subjects.items()}
+
+    total_samples = len(rows)
+
+    # Build summary table
+    summary = []
+    for project, count in sorted(project_counts.items()):
+        summary.append({
+            "Category": "Project",
+            "Group": project,
+            "Count": count,
+            "Pct of subset": round(count / total_samples * 100, 1),
+        })
+    for resp, count in sorted(response_counts.items()):
+        summary.append({
+            "Category": "Response",
+            "Group": resp,
+            "Count": count,
+            "Pct of subset": round(count / len({r[2] for r in rows}) * 100, 1),
+        })
+    for sex, count in sorted(sex_counts.items()):
+        summary.append({
+            "Category": "Sex",
+            "Group": sex,
+            "Count": count,
+            "Pct of subset": round(count / len({r[2] for r in rows}) * 100, 1),
+        })
+
+    return summary
+
+
+
 
 OUTPUT_DIR = "output"
 
@@ -207,6 +258,10 @@ def save_all_results():
     # Frequency table
     freq = createFrequencyTable()
     write_json("frequency_table.json", freq)
+
+    # Data subset summary (baseline demographics)
+    subset = dataSubsetSummary()
+    write_json("baseline_subset_summary.json", subset)
 
     # Statistical analysis
     plot_data, p_values, summary = statisticalAnalysis()
