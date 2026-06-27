@@ -1,0 +1,37 @@
+[
+  {
+    "Population": "B cell",
+    "Responder mean %": 9.8,
+    "Non-responder mean %": 10.0,
+    "Difference in means": -0.2,
+    "p-value": 0.05574771201656558
+  },
+  {
+    "Population": "CD8+ T cell",
+    "Responder mean %": 24.88,
+    "Non-responder mean %": 24.94,
+    "Difference in means": -0.06,
+    "p-value": 0.639199092320909
+  },
+  {
+    "Population": "CD4+ T cell",
+    "Responder mean %": 30.54,
+    "Non-responder mean %": 29.9,
+    "Difference in means": 0.64,
+    "p-value": 0.01340653183581808
+  },
+  {
+    "Population": "NK cell",
+    "Responder mean %": 14.84,
+    "Non-responder mean %": 15.07,
+    "Difference in means": -0.23,
+    "p-value": 0.1210600059747886
+  },
+  {
+    "Population": "Monocyte",
+    "Responder mean %": 19.94,
+    "Non-responder mean %": 20.08,
+    "Difference in means": -0.14,
+    "p-value": 0.1635092173658036
+  }
+]

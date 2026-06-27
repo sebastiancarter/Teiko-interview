@@ -1,0 +1,38 @@
+[
+  {
+    "Category": "Project",
+    "Group": "prj1",
+    "Count": 384,
+    "Pct of subset": 58.5
+  },
+  {
+    "Category": "Project",
+    "Group": "prj3",
+    "Count": 272,
+    "Pct of subset": 41.5
+  },
+  {
+    "Category": "Response",
+    "Group": "no",
+    "Count": 325,
+    "Pct of subset": 49.5
+  },
+  {
+    "Category": "Response",
+    "Group": "yes",
+    "Count": 331,
+    "Pct of subset": 50.5
+  },
+  {
+    "Category": "Sex",
+    "Group": "F",
+    "Count": 312,
+    "Pct of subset": 47.6
+  },
+  {
+    "Category": "Sex",
+    "Group": "M",
+    "Count": 344,
+    "Pct of subset": 52.4
+  }
+]

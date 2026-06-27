@@ -1,29 +1,56 @@
+import json
+import os
 import streamlit as st
-import analysis
+
+OUTPUT_DIR = "output"
+
+def load_json(filename):
+    """Load and return parsed JSON from output/<filename>."""
+    path = os.path.join(OUTPUT_DIR, filename)
+    with open(path) as f:
+        return json.load(f)
 
 
+def check_outputs_exist():
+    """Return True if all expected output files are present."""
+    expected = [
+        "baseline_subset_summary.json",
+        "frequency_table.json",
+        "responder_summary.json",
+        "boxplot_data.json",
+        "boxplot.png",
+    ]
+    return all(os.path.isfile(os.path.join(OUTPUT_DIR, f)) for f in expected)
 
 
 def navBar():
     st.sidebar.title("Navigation")
     page = st.sidebar.radio(
         "Go to",
-        ("Relative Frequency Table", "Advanced Analysis"),
+        ("Relative Frequency Table", "Advanced Analysis", "Data Subset Summary"),
     )
     return page
+
 
 def relativeFrequencyTablePage():
     st.set_page_config(page_title="Cell Frequency Analysis", layout="wide")
     st.title("Cell Type Frequency Analysis")
 
-    rows = analysis.createFrequencyTable()
+    if not check_outputs_exist():
+        st.warning(
+            "Output files not found. Run `python analysis.py` first to generate them."
+        )
+        return
 
-    # 
+    rows = load_json("frequency_table.json")
+    # make it a set to get unique populations    
     all_populations = set()
     for row in rows:
         all_populations.add(row["Population"])
 
-    # --- Sidebar filters ---
+    # order the populations alphabetically for the multiselect
+    all_populations = sorted(list(all_populations))
+
     st.sidebar.header("Filters")
     selected_populations = st.sidebar.multiselect(
         "Populations", options=all_populations, default=all_populations
@@ -65,13 +92,81 @@ def relativeFrequencyTablePage():
     )
 
 
+def advancedAnalysisPage():
+    st.title("Advanced Analysis")
+
+    if not check_outputs_exist():
+        st.warning(
+            "Output files not found. Run `python analysis.py` first to generate them."
+        )
+        return
+
+    summary_rows = load_json("responder_summary.json")
+
+    st.markdown(
+        "Comparing relative frequencies of immune cell populations between "
+        "**responders** (response = yes) and **non‑responders** (response = no) — "
+        "PBMC samples only, melanoma patients on miraclib."
+    )
+
+    st.subheader("Mean relative frequencies & p‑values")
+    st.dataframe(
+        summary_rows,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "p-value": st.column_config.NumberColumn(format="%.4f"),
+            "Responder mean %": st.column_config.NumberColumn(format="%.2f %%"),
+            "Non-responder mean %": st.column_config.NumberColumn(format="%.2f %%"),
+            "Difference in means": st.column_config.NumberColumn(format="%.2f %%"),
+        },
+    )
+
+    # significance caption
+    st.caption("\* p < 0.05 \*\* p < 0.01 \*\*\* p < 0.001  —  Mann–Whitney U test")
+    st.write("So we can see from our mann-whitney U test that there are significant differences between the CD4 T cell counts of responders and non-responders, with a p-value of 0.0134. " \
+             "\nThis suggests that the CD4 T cell counts could be a useful marker for predicting response to miraclib treatment in melanoma patients.")
+    # boxplots
+    st.subheader("Boxplots")
+    boxplot_path = os.path.join(OUTPUT_DIR, "boxplot.png")
+    st.image(boxplot_path, use_container_width=True)
+
+
+def dataSubsetSummaryPage():
+    st.title("Data Subset Summary (Baseline Demographics)")
+
+    if not check_outputs_exist():
+        st.warning(
+            "Output files not found. Run `python analysis.py` first to generate them."
+        )
+        return
+
+    subset_rows = load_json("baseline_subset_summary.json")
+
+    st.subheader("Summary of baseline demographics for melanoma patients on miraclib treatment")
+    st.dataframe(
+        subset_rows,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "Category": st.column_config.TextColumn("Category"),
+            "Group": st.column_config.TextColumn("Group"),
+            "Count": st.column_config.NumberColumn(format="%d"),
+            "Pct of subset": st.column_config.NumberColumn(format="%.1f %%"),
+        },
+    )
+
+
+
 def main():
     page = navBar()
 
     if page == "Relative Frequency Table":
         relativeFrequencyTablePage()
     elif page == "Advanced Analysis":
-        st.title("Advanced Analysis")
-        st.write("This is the advanced analysis page.")
+        advancedAnalysisPage()
+    elif page == "Data Subset Summary":
+        dataSubsetSummaryPage()
+
 
 main()
