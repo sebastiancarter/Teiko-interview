@@ -20,7 +20,7 @@ Finally, run
 ```
 make dashboard
 ```
-To create the streamlit dashboard you can use to view the analysis. This should run out of `http://localhost:8501`. To see the different steps in the analysis, click on different pages in the sidebar
+To create the streamlit dashboard you can use to view the analysis. This should run out of port 8501, `http://localhost:8501` if you are running locally, and you can find the URL in the ports tab at the bottom of the github codespace, it should be something along the lines of `https://<your codespace name here>-8501.app.github.dev/`. To see the different steps in the analysis, click on different pages in the sidebar
 
 
 
