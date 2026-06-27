@@ -14,6 +14,7 @@ def load_json(filename):
 def check_outputs_exist():
     """Return True if all expected output files are present."""
     expected = [
+        "baseline_subset_summary.json",
         "frequency_table.json",
         "responder_summary.json",
         "boxplot_data.json",
@@ -26,7 +27,7 @@ def navBar():
     st.sidebar.title("Navigation")
     page = st.sidebar.radio(
         "Go to",
-        ("Relative Frequency Table", "Advanced Analysis"),
+        ("Relative Frequency Table", "Advanced Analysis", "Data Subset Summary"),
     )
     return page
 
@@ -131,6 +132,32 @@ def advancedAnalysisPage():
     st.image(boxplot_path, use_container_width=True)
 
 
+def dataSubsetSummaryPage():
+    st.title("Data Subset Summary (Baseline Demographics)")
+
+    if not check_outputs_exist():
+        st.warning(
+            "Output files not found. Run `python analysis.py` first to generate them."
+        )
+        return
+
+    subset_rows = load_json("baseline_subset_summary.json")
+
+    st.subheader("Summary of baseline demographics for melanoma patients on miraclib treatment")
+    st.dataframe(
+        subset_rows,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "Category": st.column_config.TextColumn("Category"),
+            "Group": st.column_config.TextColumn("Group"),
+            "Count": st.column_config.NumberColumn(format="%d"),
+            "Pct of subset": st.column_config.NumberColumn(format="%.1f %%"),
+        },
+    )
+
+
+
 def main():
     page = navBar()
 
@@ -138,6 +165,8 @@ def main():
         relativeFrequencyTablePage()
     elif page == "Advanced Analysis":
         advancedAnalysisPage()
+    elif page == "Data Subset Summary":
+        dataSubsetSummaryPage()
 
 
 main()
